@@ -789,22 +789,44 @@ void AT_AF_IR_req(afIncomingMSGPacket_t *pkt  ){
   AT_AF_IR_t *hdr = (AT_AF_IR_t*)pkt->cmd.Data;
   uint8 i,j;
   uint8 code[5];
+  hdr->cmd=AT_AF_Cmd_rsp;
   switch (hdr->cmdIR){
-  case SEND_IR_CMD://终端收到要发送的红外数据
+  case SEND_IR_CMD://终端收到AF层发送的红外数据
     //HalUARTWrite(HAL_UART_PORT_0,"good!\n", sizeof("good!\n"));
     for(i=0;i<5;i++) code[i]=(uint8)hdr->data[i];//code[j]=(*hdr).data[i];
     //HalUARTWrite(HAL_UART_PORT_0,(uint8*)&code,5);
     HalUARTWrite(HAL_UART_PORT_1,(uint8*)&code,5);
+    AF_DataRequest( & (pkt->srcAddr), & AT_AF_epDesc,
+                         AT_AF_IR_CLUSTERID,
+                         sizeof(AT_AF_IR_t),
+                         (uint8*)hdr,
+                         &AT_AF_TransID,
+                         AF_DISCV_ROUTE,
+                         AF_DEFAULT_RADIUS );
     break;
-  case UPLOAD_IR_CMD://协调器收到学习的红外数据
+  case UPLOAD_IR_CMD://协调器收到AF层发送的学习到的红外数据
     //HalUARTWrite(HAL_UART_PORT_1,"hello!\n", sizeof("hello!\n"));
     for(i=0,j=0;i<5;i++,j++) code[j]=(uint8)hdr->data[i];
     HalUARTWrite(HAL_UART_PORT_1,(uint8*)&code,3);
+     AF_DataRequest( & (pkt->srcAddr), & AT_AF_epDesc,
+                         AT_AF_IR_CLUSTERID,
+                         sizeof(AT_AF_IR_t),
+                         (uint8*)hdr,
+                         &AT_AF_TransID,
+                         AF_DISCV_ROUTE,
+                         AF_DEFAULT_RADIUS );
     break;
   } 
    
 } 
 
 void AT_AF_IR_rsp(afIncomingMSGPacket_t *pkt ){
-
+  AT_AF_IR_t *hdr = (AT_AF_IR_t*)pkt->cmd.Data;
+  //AT_RESP_START();
+  //if(pkt->srcAddr.addrMode==(afAddrMode_t)Addr16Bit){
+   // printf("IR:%04X,%02X",pkt->srcAddr.addr.shortAddr,hdr->cmdIR);
+ // }else {
+   // printf("IR:UNKNOWN NWK,%02X",hdr->cmdIR);
+ // }
+ // AT_RESP_END();
 }
