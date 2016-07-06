@@ -17,6 +17,7 @@
 #include "zcl.h"
 #include "AT_ONOFF_output.h"
 #include "AT_include.h"
+#include "AT_IR.h"
 
 #include "AT_printf.h"
 
@@ -48,6 +49,8 @@ void AT_App_Init(uint8 task_id ){
   //register AT command AF layer application
   AT_AF_Register(&AT_App_TaskID);
   
+  //register AT command IR application
+  AT_IR_Register(&AT_App_TaskID);
   
   // Register the Application to receive the unprocessed Foundation command/response messages
   zcl_registerForMsg(task_id);
@@ -98,11 +101,11 @@ uint16 AT_App_ProcessEvent( uint8 task_id, uint16 events ){
               AT_ONOFF_OUTPUT_MessageMSGCB( MSGpkt );
               break;
             case AT_AF_ENDPOINT:
-              //uint8 max = 5;
-              //HalUARTWrite(HAL_UART_PORT_1,(uint8*)&max,1);
               AT_AF_MessageMSGCB( MSGpkt );
               break;
-              
+           case AT_IR_ENDPOINT:
+             AT_IR_MessageMSGCB( MSGpkt );
+              break;
             default:
               break;
           }

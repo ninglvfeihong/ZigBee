@@ -12,7 +12,7 @@
 #define AT_AF_enable             1
 #define AT_AF_disable            0
 
-#define AT_AF_MAX_CLUSTERS                 10
+#define AT_AF_MAX_CLUSTERS                 9
 #define AT_AF_Cmd_REPPRINT_CLUSTERID       0
 #define AT_AF_Cmd_REPENABLE_CLUSTERID      1
 #define AT_AF_Cmd_HA_DISC_CLUSTERID        2
@@ -22,7 +22,6 @@
 #define AT_AF_POWER_SVING_EXP_CLUSTERID    6
 #define AT_AF_UPDATE_CLUSTERID             7
 #define AT_AF_DEV_REPORT_CLUSTERID         8
-#define AT_AF_IR_CLUSTERID                 9
 #define AT_AF_GROUP_ID                     0x8000
 
 
@@ -39,7 +38,6 @@
   AT_AF_POWER_SVING_EXP_CLUSTERID,              \
   AT_AF_UPDATE_CLUSTERID,                       \
   AT_AF_DEV_REPORT_CLUSTERID,                   \
-  AT_AF_IR_CLUSTERID                            \
 }
 
 
@@ -120,16 +118,6 @@ typedef struct{
   AT_AF_hdr hdr;
   uint8 list[];
 } AT_AF_Cmd_RCIDDISC_req_t;
-
-#define UPLOAD_IR_CMD 0x00
-#define SEND_IR_CMD   0x01
-#define IR_SUCCESS    0x02
-//data structure for IR send
-typedef struct{
-  uint8 cmd;
-  uint8 cmdIR;
-  uint8 data[5];
-}AT_AF_IR_t;
 
 //the necessary structure for POWER SVING experiment structure
 #define AT_AT_PSE_RSSI_req 0x01

@@ -66,10 +66,6 @@ void AT_AF_Cmd_R_CIDDISC_CB(afIncomingMSGPacket_t *pkt );
 void AT_AF_Cmd_R_CIDDISC_req(afIncomingMSGPacket_t *pkt  );
 void AT_AF_Cmd_R_CIDDISC_rsp(afIncomingMSGPacket_t *pkt );
 
-void AT_AF_IR_CB(afIncomingMSGPacket_t *pkt );
-void AT_AF_IR_req(afIncomingMSGPacket_t *pkt );
-void AT_AF_IR_rsp(afIncomingMSGPacket_t *pkt );
-
 void AT_AF_Cmd_POWER_SVING_EXP_CB(afIncomingMSGPacket_t *pkt );
 
 void AT_AF_TEST_KEY_CB(afIncomingMSGPacket_t *pkt );
@@ -125,9 +121,6 @@ void AT_AF_MessageMSGCB( afIncomingMSGPacket_t *pkt )
       break;
     case  AT_AF_DEV_REPORT_CLUSTERID:
       AT_AF_DEV_REPORT_CB(pkt);
-      break;
-    case AT_AF_IR_CLUSTERID:
-      AT_AF_IR_CB(pkt);
       break;
   }
 }
@@ -773,57 +766,4 @@ void AT_AF_DEV_REPORT_CB(afIncomingMSGPacket_t *pkt){
     printf(",%02X",dat->epList[i]);
   }
   AT_RESP_END();
-}
-void AT_AF_IR_CB(afIncomingMSGPacket_t *pkt){
-AT_AF_IR_t *hdr = (AT_AF_IR_t*)pkt->cmd.Data;
-  switch (hdr->cmd){
-  case AT_AF_Cmd_req:
-    AT_AF_IR_req(pkt);
-    break;
-  case AT_AF_Cmd_rsp:
-    AT_AF_IR_rsp(pkt);
-    break;
-  } 
-}
-void AT_AF_IR_req(afIncomingMSGPacket_t *pkt  ){
-  AT_AF_IR_t *hdr = (AT_AF_IR_t*)pkt->cmd.Data;
-  uint8 i;
-  uint8 code[5];
-  switch (hdr->cmdIR){
-  case SEND_IR_CMD://终端收到AF层发送的红外数据,数据最初是从串口0发出
-    //HalUARTWrite(HAL_UART_PORT_0,"good!\n", sizeof("good!\n"));
-    hdr->cmd=AT_AF_Cmd_rsp;
-    for(i=0;i<5;i++) code[i]=(uint8)hdr->data[i];//code[j]=(*hdr).data[i];
-    //HalUARTWrite(HAL_UART_PORT_0,(uint8*)&code,5);
-    uint8 size=HalUARTWrite(HAL_UART_PORT_1,(uint8*)&code,5);
-    if(size==5){
-     hdr->cmdIR=IR_SUCCESS;
-    AF_DataRequest( & (pkt->srcAddr), & AT_AF_epDesc,
-                         AT_AF_IR_CLUSTERID,
-                         sizeof(AT_AF_IR_t),
-                         (uint8*)hdr,
-                         &AT_AF_TransID,
-                         AF_DISCV_ROUTE,
-                         AF_DEFAULT_RADIUS );
-    }
-    break;
-  case UPLOAD_IR_CMD://协调器收到AF层发送的学习到的红外数据
-    //HalUARTWrite(HAL_UART_PORT_1,"hello!\n", sizeof("hello!\n"));
-    //for(i=0,j=0;i<5;i++,j++) code[j]=(uint8)hdr->data[i];
-    //HalUARTWrite(HAL_UART_PORT_1,(uint8*)&code,3);
-    //在串口打印格式：IR:<Address>,<IR_type>,<code1>,<code2>,<code3>
-    printf("IR:%04X,NEC,%02X,%02X,%02X\n\r",
-            pkt->srcAddr.addr.shortAddr,
-            hdr->data[0],
-            hdr->data[1],
-            hdr->data[2]);
-    break;
-  } 
-   
-} 
-
-void AT_AF_IR_rsp(afIncomingMSGPacket_t *pkt ){
-  AT_AF_IR_t *hdr = (AT_AF_IR_t*)pkt->cmd.Data;
-   if(hdr->cmdIR==IR_SUCCESS)
-  HalUARTWrite(HAL_UART_PORT_0,"EPDevice IR send success!\n", sizeof("EPDevice IR send success!\n"));
 }

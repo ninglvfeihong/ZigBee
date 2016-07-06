@@ -7,6 +7,7 @@
 
 #include "At_include.h"
 #include "AT_uart2.h"
+#include "AT_IR.h"
 
 //void AT_UART2_IR_send(uint8 buffer[],uint8 n);
 //uint8 AT_Char2Int8(uint8 num);
@@ -31,28 +32,24 @@ uint8 AT_UartInit2( uint8 taskID )
 }
 
 void AT_UartProcess2( uint8 port, uint8 event ){
-  uint8 code[5];
+  uint8 code[3];
   (void) event;
-  uint8 i,status;
-  AT_AF_IR_t buff; 
-  buff.cmd=AT_AF_Cmd_req;
-  buff.cmdIR=UPLOAD_IR_CMD;
+  //uint8 status;
+  AT_IR_t buff; 
   uint16 nwk=0x0000;
   if(Hal_UART_RxBufLen( port )){
    uint8 size=HalUARTRead(port,(uint8*)&code,5); 
-    //HalUARTWrite(HAL_UART_PORT_0,(uint8*)&code,3);
-    //AT_UART2_IR_send(code,3);
    if(size==3){
-     //串口读取到红外模块学习的数据
-    for(i=0;i<3;i++) buff.data[i]=code[i];//buff.data[j]=AT_Char2Int8(code[i]);
-    HalUARTWrite(HAL_UART_PORT_0,(uint8*)(&(buff.data)),3);
-    status = AT_AF_Cmd_send_simple(nwk,AT_AF_IR_CLUSTERID,sizeof(AT_AF_IR_t)-2,&buff);
-    //if(status==ZSUCCESS) AT_OK();
-   }
-   else if(size==5){
-     //串口收到来自协调器的红外数据
-    for(i=0;i<5;i++) buff.data[i]=code[i];//buff.data[j]=AT_Char2Int8(code[i]);
-    HalUARTWrite(HAL_UART_PORT_0,(uint8*)(&(buff.data)),5);
+   buff.cmd=AT_IR_Cmd_req;
+   buff.cmdIR=UPLOAD_IR_CMD;
+   //串口读取到红外模块学习的数据
+   buff.code.IRversion=0x01;
+   buff.code.IRlength=0x24;
+   buff.code.IRtype=0x01;
+   buff.code.IRaddress[0]=code[0];
+   buff.code.IRaddress[1]=code[1];
+   buff.code.IRvalue=code[2];
+   AT_IR_Cmd_send_simple(nwk,AT_IR_CLUSTERID,sizeof(AT_IR_t),&buff);
    }
  }
 }
